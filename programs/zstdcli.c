@@ -347,7 +347,7 @@ static void errorOut(const char* msg)
 
 /*! readU32FromCharChecked() :
  * @return 0 if success, and store the result in *value.
- *  allows and interprets K, KB, KiB, M, MB and MiB suffix.
+ *  allows and interprets K, KB, KiB, M, MB, MiB, G, GB and GiB suffix.
  *  Will also modify `*stringPtr`, advancing it to position where it stopped reading.
  * @return 1 if an overflow error occurs */
 static int readU32FromCharChecked(const char** stringPtr, unsigned* value)
@@ -362,15 +362,19 @@ static int readU32FromCharChecked(const char** stringPtr, unsigned* value)
         if (result < last) return 1; /* overflow error */
         (*stringPtr)++ ;
     }
-    if ((**stringPtr=='K') || (**stringPtr=='M')) {
+    if ((**stringPtr=='K') || (**stringPtr=='M') || (**stringPtr=='G')) {
         unsigned const maxK = ((unsigned)(-1)) >> 10;
         if (result > maxK) return 1; /* overflow error */
         result <<= 10;
-        if (**stringPtr=='M') {
+        if ((**stringPtr=='M') || (**stringPtr=='G')) {
             if (result > maxK) return 1; /* overflow error */
             result <<= 10;
         }
-        (*stringPtr)++;  /* skip `K` or `M` */
+        if (**stringPtr=='G') {
+            if (result > maxK) return 1; /* overflow error */
+            result <<= 10;
+        }
+        (*stringPtr)++;  /* skip `K`, `M` or `G` */
         if (**stringPtr=='i') (*stringPtr)++;
         if (**stringPtr=='B') (*stringPtr)++;
     }
@@ -380,7 +384,7 @@ static int readU32FromCharChecked(const char** stringPtr, unsigned* value)
 
 /*! readU32FromChar() :
  * @return : unsigned integer value read from input in `char` format.
- *  allows and interprets K, KB, KiB, M, MB and MiB suffix.
+ *  allows and interprets K, KB, KiB, M, MB, MiB, G, GB and GiB suffix.
  *  Will also modify `*stringPtr`, advancing it to position where it stopped reading.
  *  Note : function will exit() program if digit sequence overflows */
 static unsigned readU32FromChar(const char** stringPtr) {
@@ -392,7 +396,7 @@ static unsigned readU32FromChar(const char** stringPtr) {
 
 /*! readIntFromChar() :
  * @return : signed integer value read from input in `char` format.
- *  allows and interprets K, KB, KiB, M, MB and MiB suffix.
+ *  allows and interprets K, KB, KiB, M, MB, MiB, G, GB and GiB suffix.
  *  Will also modify `*stringPtr`, advancing it to position where it stopped reading.
  *  Note : function will exit() program if digit sequence overflows */
 static int readIntFromChar(const char** stringPtr) {
@@ -409,7 +413,7 @@ static int readIntFromChar(const char** stringPtr) {
 
 /*! readSizeTFromCharChecked() :
  * @return 0 if success, and store the result in *value.
- *  allows and interprets K, KB, KiB, M, MB and MiB suffix.
+ *  allows and interprets K, KB, KiB, M, MB, MiB, G, GB and GiB suffix.
  *  Will also modify `*stringPtr`, advancing it to position where it stopped reading.
  * @return 1 if an overflow error occurs */
 static int readSizeTFromCharChecked(const char** stringPtr, size_t* value)
@@ -424,15 +428,19 @@ static int readSizeTFromCharChecked(const char** stringPtr, size_t* value)
         if (result < last) return 1; /* overflow error */
         (*stringPtr)++ ;
     }
-    if ((**stringPtr=='K') || (**stringPtr=='M')) {
+    if ((**stringPtr=='K') || (**stringPtr=='M') || (**stringPtr=='G')) {
         size_t const maxK = ((size_t)(-1)) >> 10;
         if (result > maxK) return 1; /* overflow error */
         result <<= 10;
-        if (**stringPtr=='M') {
+        if ((**stringPtr=='M') || (**stringPtr=='G')) {
             if (result > maxK) return 1; /* overflow error */
             result <<= 10;
         }
-        (*stringPtr)++;  /* skip `K` or `M` */
+        if (**stringPtr=='G') {
+            if (result > maxK) return 1; /* overflow error */
+            result <<= 10;
+        }
+        (*stringPtr)++;  /* skip `K`, `M` or `G` */
         if (**stringPtr=='i') (*stringPtr)++;
         if (**stringPtr=='B') (*stringPtr)++;
     }
@@ -442,7 +450,7 @@ static int readSizeTFromCharChecked(const char** stringPtr, size_t* value)
 
 /*! readSizeTFromChar() :
  * @return : size_t value read from input in `char` format.
- *  allows and interprets K, KB, KiB, M, MB and MiB suffix.
+ *  allows and interprets K, KB, KiB, M, MB, MiB, G, GB and GiB suffix.
  *  Will also modify `*stringPtr`, advancing it to position where it stopped reading.
  *  Note : function will exit() program if digit sequence overflows */
 static size_t readSizeTFromChar(const char** stringPtr) {
@@ -830,7 +838,7 @@ static unsigned init_nbWorkers(unsigned defaultNbWorkers) {
     NEXT_FIELD(__nb);                 \
     _varu32 = readU32FromChar(&__nb); \
     if(*__nb != 0) {                  \
-        errorOut("error: only numeric values with optional suffixes K, KB, KiB, M, MB, MiB are allowed"); \
+        errorOut("error: only numeric values with optional suffixes K, KB, KiB, M, MB, MiB, G, GB, GiB are allowed"); \
     }                                 \
 }
 
@@ -839,7 +847,7 @@ static unsigned init_nbWorkers(unsigned defaultNbWorkers) {
     NEXT_FIELD(__nb);                     \
     _varTsize = readSizeTFromChar(&__nb); \
     if(*__nb != 0) {                      \
-        errorOut("error: only numeric values with optional suffixes K, KB, KiB, M, MB, MiB are allowed"); \
+        errorOut("error: only numeric values with optional suffixes K, KB, KiB, M, MB, MiB, G, GB, GiB are allowed"); \
     }                                     \
 }
 

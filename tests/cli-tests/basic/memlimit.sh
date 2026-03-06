@@ -35,6 +35,24 @@ rm file.zst
 println "+ zstd --memory=1MiB file"
 zstd -q --memory=1MiB file && die "Should allow numeric parameter with expected suffix"
 rm file.zst
+println "+ zstd --memory=1G file"
+zstd -q --memory=1G file && die "Should allow numeric parameter with expected suffix"
+rm file.zst
+println "+ zstd --memory=1GB file"
+zstd -q --memory=1GB file && die "Should allow numeric parameter with expected suffix"
+rm file.zst
+println "+ zstd --memory=1GiB file"
+zstd -q --memory=1GiB file && die "Should allow numeric parameter with expected suffix"
+rm file.zst
+println "+ zstd --memory=3G file"
+zstd -q --memory=3G file && die "Should allow numeric parameter with expected suffix"
+rm file.zst
+println "+ zstd --memory=4G file"
+zstd --memory=4G file && die "Should not allow value that overflows 32-bit unsigned int"
+println "+ zstd --memory=5GiB file"
+zstd --memory=5GiB file && die "Should not allow value that overflows 32-bit unsigned int"
+println "+ zstd --memory=1000000GB file"
+zstd --memory=1000000GB file && die "Should not allow value that overflows 32-bit unsigned int"
 
 rm file
 exit 0
